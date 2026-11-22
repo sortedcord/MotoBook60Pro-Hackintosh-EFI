@@ -1,0 +1,104 @@
+diff --git a/VoodooI2CHID/VoodooI2CHIDDevice.cpp b/VoodooI2CHID/VoodooI2CHIDDevice.cpp
+index 8cd31f5..bbb8e0c 100644
+--- a/VoodooI2CHID/VoodooI2CHIDDevice.cpp
++++ b/VoodooI2CHID/VoodooI2CHIDDevice.cpp
+@@ -135,7 +135,7 @@ void VoodooI2CHIDDevice::getInputReport() {
+             UInt32 v = 0; if (PE_parse_boot_argn("vi2c-glitch-step", &v, sizeof(v)) && v >= 40 && v <= 2000) gl_step = v;
+         }
+         UInt32 sz = report[0] | report[1] << 8;
+-        if (!guard_off && sz >= 40 && sz <= hid_descriptor.wMaxInputLength && report[2] == 4) {
++        if (!guard_off && glitchLayout(sz) && sz <= hid_descriptor.wMaxInputLength && report[2] == 4) {
+             int tries = 0;
+             bool bad = glitchSuspicious(report, sz);
+             const UInt8 first[16] = { report[3], report[4], report[5], report[6], report[7], report[8], report[9],
+@@ -147,7 +147,7 @@ void VoodooI2CHIDDevice::getInputReport() {
+                 tries++;
+                 api->readI2C(report, hid_descriptor.wMaxInputLength);
+                 sz = report[0] | report[1] << 8;
+-                bad = !(sz >= 40 && sz <= hid_descriptor.wMaxInputLength && report[2] == 4) ? false : glitchSuspicious(report, sz);
++                bad = !(glitchLayout(sz) && sz <= hid_descriptor.wMaxInputLength && report[2] == 4) ? false : glitchSuspicious(report, sz);
+                 // the pad answers a re-read with the same frame (or the next one) when the move was real: a corrupted
+                 // read does not repeat, so a re-read that agrees with the first read is a fast finger, not a glitch
+                 if (bad && glitchSimilar(r1, report)) { bad = false; genuine = true; }
+@@ -178,12 +178,12 @@ void VoodooI2CHIDDevice::getInputReport() {
+             // <local> vote: while a finger is down, a new frame is read twice. A corrupted read does not repeat: when the two
+             // reads of the same frame (same scan time) differ, a third read decides, and a frame nobody confirms is dropped.
+             // No threshold, so it also catches small corruption. Boot-arg -vi2c-no-vote turns it off.
+-            if (report[2] == 4 && sz >= 40 && sz <= hid_descriptor.wMaxInputLength) {
++            if (report[2] == 4 && glitchLayout(sz) && sz <= hid_descriptor.wMaxInputLength) {
+                 static int vote_off = -1;
+                 if (vote_off < 0) { char arg[8]; vote_off = PE_parse_boot_argn("-vi2c-no-vote", arg, sizeof(arg)) ? 1 : 0; }
+                 bool tip_down = false;
+-                for (int f = 0; f < 5; f++) if ((report[3 + f * 7] >> 1) & 1) tip_down = true;
+-                UInt16 scan = report[38] | (report[39] << 8);
++                for (int f = 0; f < 5; f++) if ((report[3 + f * gl_stride] >> 1) & 1) tip_down = true;
++                UInt16 scan = report[gl_scan] | (report[gl_scan + 1] << 8);
+                 bool vote_drop = false;
+                 if (!vote_off && tip_down && !(gl_have_scan && scan == gl_last_scan)) {
+                     UInt32 maxlen = hid_descriptor.wMaxInputLength;
+@@ -196,7 +196,7 @@ void VoodooI2CHIDDevice::getInputReport() {
+                         bool ok2 = sz2 == sz && r2[2] == 4;
+                         if (ok2 && memcmp(report + 2, r2 + 2, sz - 2) == 0) {
+                             // confirmed
+-                        } else if (ok2 && (UInt16)(r2[38] | (r2[39] << 8)) == scan) {
++                        } else if (ok2 && (UInt16)(r2[gl_scan] | (r2[gl_scan + 1] << 8)) == scan) {
+                             // same frame, different bytes: one of the two reads is corrupted
+                             gl_vote_mis++;
+                             if (gl_vote_mis <= 6) {
+@@ -786,7 +786,7 @@ void VoodooI2CHIDDevice::stopInterrupt() {
+ // i.e. contact id 0 with no tip: they must not reset the position kept for the real finger 0.
+ bool VoodooI2CHIDDevice::glitchSuspicious(const UInt8* r, UInt32 size) {
+     for (int f = 0; f < 5; f++) {
+-        const UInt8* q = r + 3 + f * 7;
++        const UInt8* q = r + 3 + f * gl_stride;
+         int id = q[0] >> 4;
+         if (!((q[0] >> 1) & 1) || !gl_seen[id]) continue;
+         UInt16 x = q[1] | (q[2] << 8), y = q[3] | (q[4] << 8);
+@@ -799,7 +799,7 @@ bool VoodooI2CHIDDevice::glitchSuspicious(const UInt8* r, UInt32 size) {
+ void VoodooI2CHIDDevice::glitchAccept(const UInt8* r, UInt32 size) {
+     bool any = false;
+     for (int f = 0; f < 5; f++) {
+-        const UInt8* q = r + 3 + f * 7;
++        const UInt8* q = r + 3 + f * gl_stride;
+         if (!((q[0] >> 1) & 1)) continue;
+         int id = q[0] >> 4;
+         any = true;
+@@ -811,8 +811,8 @@ void VoodooI2CHIDDevice::glitchAccept(const UInt8* r, UInt32 size) {
+ // <local> true when every finger down in a is down in b, same contact id, within 40 units
+ bool VoodooI2CHIDDevice::glitchSimilar(const UInt8* a, const UInt8* b) {
+     for (int f = 0; f < 5; f++) {
+-        const UInt8* qa = a + 3 + f * 7;
+-        const UInt8* qb = b + 3 + f * 7;
++        const UInt8* qa = a + 3 + f * gl_stride;
++        const UInt8* qb = b + 3 + f * gl_stride;
+         if (!((qa[0] >> 1) & 1)) continue;
+         if (!((qb[0] >> 1) & 1) || (qa[0] >> 4) != (qb[0] >> 4)) return false;
+         UInt16 xa = qa[1] | (qa[2] << 8), ya = qa[3] | (qa[4] << 8), xb = qb[1] | (qb[2] << 8), yb = qb[3] | (qb[4] << 8);
+@@ -821,3 +821,14 @@ bool VoodooI2CHIDDevice::glitchSimilar(const UInt8* a, const UInt8* b) {
+     }
+     return true;
+ }
++
++// <local> report 4 = 2 length bytes, ID, 5 finger slots, scan time u16, contact count, button. A slot is 7 bytes with
++// pressure (ThinkBook 14+ GXTP5100, 42-byte frame) or 5 without (moto book 60 pro GXTP5100, 32-byte frame): the slot size
++// follows from the frame length, and the scan time sits right after the five slots.
++bool VoodooI2CHIDDevice::glitchLayout(UInt32 size) {
++    if (size < 32 || (size - 7) % 5) return false;
++    UInt32 stride = (size - 7) / 5;
++    if (stride < 5 || stride > 9) return false;
++    gl_stride = stride; gl_scan = 3 + 5 * stride;
++    return true;
++}
+diff --git a/VoodooI2CHID/VoodooI2CHIDDevice.hpp b/VoodooI2CHID/VoodooI2CHIDDevice.hpp
+index 5ce0328..61dcfce 100644
+--- a/VoodooI2CHID/VoodooI2CHIDDevice.hpp
++++ b/VoodooI2CHID/VoodooI2CHIDDevice.hpp
+@@ -110,6 +110,8 @@ class EXPORT VoodooI2CHIDDevice : public IOHIDDevice {
+     UInt32 gl_step = 160, gl_genuine = 0;   // step (raw units, pad 4149 x 2147) above which a frame is read again
+     bool glitchSimilar(const UInt8* a, const UInt8* b);
+     bool glitchSuspicious(const UInt8* r, UInt32 size);
++    bool glitchLayout(UInt32 size);
++    UInt32 gl_stride = 7, gl_scan = 38;
+     void glitchAccept(const UInt8* r, UInt32 size);
+ 
+   OSDeclareDefaultStructors(VoodooI2CHIDDevice);

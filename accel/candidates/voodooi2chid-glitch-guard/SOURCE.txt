@@ -1,0 +1,8 @@
+VoodooI2C v2.9.1 (e3ac3ed2), satellite VoodooI2CHID a478fd6, MacKernelSDK a2ba595 headers.
++ VoodooI2CHID-glitch-guard.patch from samwu07/xegfx-thinkbook14plus-mtl dc57f8ba (touchpad/patches). GPL-3.0.
+Built with build-hid.sh (Command Line Tools clang 17, no Xcode). Info.plist = the official release's.
+Unpatched build imports the same 492 kernel symbols as the official release; patched adds only
+_PE_parse_boot_argn, _memcmp, _snprintf (as samwu07 documents). original/ = the kext it replaces.
+Boot-args: vi2c-glitch-step=N, -vi2c-no-glitch-guard, -vi2c-no-vote, vi2c-idle-ms=N.
+v2 (current VoodooI2CHID.kext): + glitch-guard-layout.patch -- slot size and scan-time offset from the frame length
+(5-byte slots, 32-byte frames on this pad; the ThinkBook's 7/42 unchanged). v1-thinkbook-layout/ = first build.

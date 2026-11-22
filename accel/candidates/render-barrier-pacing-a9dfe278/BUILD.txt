@@ -1,0 +1,8 @@
+Source WTLIntelGfx a9dfe27820430fe5dc261a86b16a62f762d25740
+Headers Khronos Vulkan-Headers v1.4.328 (9a0f3099c8a9607a7c0f3127d8abfdc19a93e8c5)
+Patches render-barrier-only.patch and windowserver-xgdr.patch
+Patch sources are xegfx-thinkbook14plus-mtl issue #2 and commit dc57f8ba2a270eb5a88dd03701edb7e05a5b2096.
+Build upstream build/build_plugin.sh, x86_64, Apple clang 17, ad hoc signature.
+Install only as the executable inside the preflight-tested XeGfx NVMTLDriver.bundle with its original AIR runtime and Info.plist.
+Executable UUID BE0570AE-3561-38FA-9A13-9AC330FB930D.
+Private preflight report: reports/windowserver-pacing-preflight-pd20um.

@@ -11,7 +11,7 @@ import hashlib, io, os, plistlib, shutil, sys, zipfile
 
 XEGFX_ZIP_SHA = '55735d7ea6347ea371892dcdb338182d9d4dae32a5f0d0c0a072d02a39294d95'
 G = '7C436110-AB2A-4BBB-A880-FE41995C9F82'
-EXTRA_ARGS = ['xegfx.nvram_trace=0']
+EXTRA_ARGS = ['xegfx.nvram_trace=0', 'amfi=0x80']   # amfi: WindowServer loads the ad hoc Metal plugin (autostart)
 
 
 def main():

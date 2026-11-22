@@ -1,0 +1,4 @@
+Build from the same source, dependencies and two patches as ../render-barrier-pacing-a9dfe278.
+Apply ws-frame-diagnostics.patch after those two patches. It contains the diagnostics hunks from
+the same ThinkBook wsmark-plugin.patch and does not change compositor timing settings.
+Use the existing bundle's AIR runtime and Info.plist. Executable UUID 06DFFFD9-8FAB-35E8-AD60-3E48C26E1407.

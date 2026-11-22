@@ -1,0 +1,6 @@
+67391c64543d3c418362bad938876ed3c3a4374666e5f585d8cc625c0b7b2ab9  ./XeGfxAccel.kext/Contents/Info.plist
+7c41b33bae1d3dbb1b90d5b05dfcdea43945a096e4b933c26d646ae72a520071  ./XeGfxAccel.kext/Contents/MacOS/XeGfxAccel
+6686de10a28a2fe11b36cbb86dcbacc827cfc4ea116b4dabf1845e5aee629e9b  ./XeGfxAccel.kext/Contents/_CodeSignature/CodeResources
+074143097620016490a92dad7f94b19adbf4d12bef4d3de7dfc6dadaf15fd379  ./stock/XeGfxAccel.kext/Contents/Info.plist
+f731e0c0efe77d1739f5413c6adaed86e7bb308a3ec7b6c0ab70f402e6f9f9ed  ./stock/XeGfxAccel.kext/Contents/MacOS/XeGfxAccel
+01fed4cbeabf8fd8c7c06dccfbb31fba680f0cca6bfbc80134f2cefe1bebd836  ./xeflip-tear-diagnostics.patch

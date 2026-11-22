@@ -1,0 +1,60 @@
+--- a/plugin/NVMTLEventSync.m
++++ b/plugin/NVMTLEventSync.m
+@@ -689,6 +689,26 @@
+         }
+     }
+ }
++// Report individual stalls after dispatch. This reads the existing timestamp
++// calibration and leaves the fence, marking, and publication order unchanged.
++static void nvmtl_ws_part_diagnostics(const nvk_cmdbuf *commands, uint64_t workerStart,
++                                     uint64_t submitDone, uint64_t marksDone, uint64_t publishDone) {
++    const uint64_t fenceDone = commands->timing.host_after_ns;
++    double gpuStart, gpuEnd;
++    if (fenceDone < workerStart || fenceDone > submitDone ||
++        nvmtl_vk_interval_seconds(&commands->timing, &gpuStart, &gpuEnd)) return;
++    const double gpuEndNs = gpuEnd * 1e9;
++    if (gpuEndNs <= 0 || gpuEndNs > (double)publishDone ||
++        (double)publishDone - gpuEndNs < 20000000.0) return;
++    static _Atomic unsigned reported;
++    if (atomic_fetch_add(&reported, 1) >= 24) return;
++    const double readyForWorker = (double)workerStart - gpuEndNs;
++    nvlog("WindowServer completion: GPU end to worker %.1f ms (negative means the worker was already waiting), "
++          "worker to fence/witness %.1f ms, query/retire %.1f ms, ready marks %.1f ms, publication %.1f ms",
++          readyForWorker / 1e6, (fenceDone - workerStart) / 1e6, (submitDone - fenceDone) / 1e6,
++          (marksDone - submitDone) / 1e6, (publishDone - marksDone) / 1e6);
++}
++
+ - (BOOL)nvmtlAdvancePart {
+     if (_executionDone) return NO;
+     if (_cbError) { [self nvmtlFinishExecution:_cbError]; return YES; }
+@@ -715,6 +735,7 @@
+     if (part->commands.cb || ahead) {
+         [self nvmtlMarkScheduled];
+         if (!_legacyKernelStart) _legacyKernelStart = clock_gettime_nsec_np(CLOCK_UPTIME_RAW) / 1e9;
++        const uint64_t workerStart = _wsCommitNs ? clock_gettime_nsec_np(CLOCK_UPTIME_RAW) : 0;
+         int result;
+         if (part->inflight) result = nvmtl_gsub_finish(part);
+         else if (part->aheadFailed) result = part->aheadFailed;
+@@ -727,15 +748,21 @@
+             if (!nvmtl_quarantined_parts) nvmtl_quarantined_parts = [NSMutableArray new];
+             [nvmtl_quarantined_parts addObject:part];
+         }
++        const uint64_t submitDone = workerStart ? clock_gettime_nsec_np(CLOCK_UPTIME_RAW) : 0;
+         if (result == 0) [self nvmtlCollectDeviceTiming:&part->commands];
+         BOOL published = result == 0;
+         if (published) {
+             // the GPU has finished this part: its surfaces' kernel marks are released (nvmtl_ws_part_landed) before the
+             // surface work below, which takes the surface's own lock
+             NSMutableArray *settled = [NSMutableArray new];
+-            for (NVMTLTexture *texture in nvmtl_ws_part_landed(self, _nextPart, settled)) if (![texture nvmtlSurfaceOut]) published = NO;
++            NSArray *texturesToPublish = nvmtl_ws_part_landed(self, _nextPart, settled);
++            const uint64_t marksDone = workerStart ? clock_gettime_nsec_np(CLOCK_UPTIME_RAW) : 0;
++            for (NVMTLTexture *texture in texturesToPublish) if (![texture nvmtlSurfaceOut]) published = NO;
+             if (!nvmtl_ws_publish_settled(settled, self)) published = NO;
+             for (NVMTLBuffer *buffer in nvmtl_submission_copies(part->resources, YES)) nvmtl_buffer_sync_out(buffer);
++            if (workerStart && published)
++                nvmtl_ws_part_diagnostics(&part->commands, workerStart, submitDone, marksDone,
++                                          clock_gettime_nsec_np(CLOCK_UPTIME_RAW));
+         }
+         if (!published) {
+             [self nvmtlFinishExecution:[NSError errorWithDomain:MTLCommandBufferErrorDomain code:MTLCommandBufferErrorInternal

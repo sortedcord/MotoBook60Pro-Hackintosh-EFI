@@ -1,0 +1,4 @@
+2026-11-22 12:42:26.300 mtlprobe[9697:62433] device: Intel Arrow Lake Xe-LPG+
+GPUPass: PIPELINE BUILT
+ColorFill: PIPELINE BUILT
+TextureCopy: PIPELINE BUILT

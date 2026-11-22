@@ -121,7 +121,8 @@ about a minute after login even though XeGfx never started**. Don't put XeGfx.ke
 1. `sudo bash scripts/run-xegfx-stages.sh 4`. This is i915 init with display code skipped. Afterwards the panel
    must still show the desktop: no black screen and no band. Check `xegfx-fbmove` / "stage 4 boot framebuffer
    move" in the log.
-2. `... 6`. Expect work on rcs0/bcs0/ccs0 (and vcs on GT1) to come back right.
+2. `... 6`. Expect work on rcs0/bcs0/ccs0 to come back right. On this machine XeGfx 0.0.48 skips the
+   standalone media GT because its FreeBSD port lacks MEI. Stage 6 tests the engines i915 exposes.
 3. If a stage panics, the watchdog (`debug.xegfx_wdog=60`) turns a stall into a panic. After the reboot, run
    `scripts/collect-after-crash.sh`. **Don't rerun a stage that failed in the same boot.** Rerunning stage 4
    initialises i915 a second time on top of the first.
@@ -135,14 +136,20 @@ use. Most of it should be device-agnostic:
   re-sign ad hoc (`codesign -f -s - --deep`). samwu07's `metal-stack/desktop/install-xeintelfb.sh` already does
   exactly this for 7D55: copy it and change `MATCH`.
 - `XeGfxAGDC.kext` 0.1.1 matches on IOResources. No change.
-- `NVMTLDriver.bundle` (+ `air-runtime/` with LLVM 20 for the AIR bitcode reader), `nvmtl/libvulkan_intel.dylib`
-  (Mesa ANV 26.3-devel), `libdrm.2.dylib` and `libnvmtl_translate.dylib` go to `/Library/GPUBundles/`, and
-  `intel_icd.json` stays as shipped. Check that Mesa ANV recognises `0x7d51`. ANV knows ARL-H as `arl` (the MTL
-  family), and change-48 got "Intel(R) Graphics (ARL)" on 7D51, so it should.
-- Follow samwu07's `metal-stack/install/README.txt` and `metal-stack/desktop/README.txt` in order:
-  install-metal.sh → test-metal.sh (stage 7 + `mtlprobe`) → install-xeintelfb.sh → install-desktop.sh →
-  desktop-on.sh. Each one `die`s unless it sees `7D55` and the `/Volumes/PKG/...` paths, so make a copy for 7D51.
-  Don't edit them in place.
+- For the private probe, `NVMTLDriver.bundle` with the LLVM 20 AIR reader goes in `/Library/XeGfx/metal/`.
+  Mesa ANV's `libvulkan_intel.dylib`, `libdrm.2.dylib`, `libnvmtl_translate.dylib`, and `intel_icd.json` go in
+  `/Library/GPUBundles/nvmtl/`. In Gate 4 the plugin goes in `/Library/GPUBundles/`. Check that Mesa ANV
+  recognises `0x7d51`. It calls this GPU family `arl`, and change-48 saw "Intel(R) Graphics (ARL)" on 7D51.
+- For the private probe, run `sudo bash scripts/install-metal-probe.sh` after stage 6, reboot, mount the ESP,
+  then run `sudo bash scripts/run-xegfx-stages.sh 7`. Confirm `NMXAccel` attaches and run
+  `bash scripts/test-metal-probe.sh` as the logged-in user. Both Metal compute and draw must pass. Check `LOG.md`
+  before repeating any install or reboot step.
+- After the private CoreDisplay probe builds `GPUPass`, `ColorFill`, and `TextureCopy`, run
+  `sudo bash scripts/install-xegfx-framebuffer.sh`. It adds `7D51` to XeGfxIntelFB, signs the kext, and backs
+  up the auxiliary collection. Reboot and check that `XeGfxIntelFramebuffer` owns the built-in panel.
+- After the Intel framebuffer boots, use `sudo bash scripts/install-xegfx-desktop-component.sh compositor REPORT`
+  with the private CoreDisplay probe report directory. It installs XeGfxAGDC and the verified plugin with an
+  armed-only WindowServer allow-list. Reboot, run stages 1–7, and save your work before activation.
 - Installing kexts into the AuxKC needs SIP to allow untrusted kexts. 0x0803 already includes
   `CSR_ALLOW_UNTRUSTED_KEXTS`. The ThinkBook used **`csr-active-config = 430A0000` (0xA43)** and the boot-args
   `amfi_get_out_of_my_way=0x1 amfi=0x80 ipc_control_port_options=0` so WindowServer can load the unsigned plugin.
@@ -150,8 +157,9 @@ use. Most of it should be device-agnostic:
 - Back up `/Library/KernelCollections/AuxiliaryKernelExtensions.kc` before the first AuxKC change.
 
 ### Gate 4: desktop on the GPU
-- Run desktop-on.sh. It sets `debug.xegfx_agdc_k5=1`, `debug.nvaccel_iop=1` and the accelfb switches, then restarts
-  WindowServer. Expect **one WindowServer restart per boot**, which means logging in again.
+- Run `sudo bash scripts/desktop-on.sh --restart-windowserver` after stage 7. It checks the Intel framebuffer and
+  sets the AGDC and accelerator switches, then restarts WindowServer. Log in again and check the report's
+  display-pipe counters. A guard disables the plugin for WindowServer if it keeps restarting.
 - Then turn on zero-copy flip (samwu07 `desktop/xeflip.sh try`; on 7D55: 602 flipped, 0 copied).
 - Then autostart (`desktop/autostart.sh on`). It has a guard: a run that isn't confirmed blocks the next one.
 - Brightness: `brightness/` in samwu07's repo (SSDT-PNLF is already in the EFI, and XeGfxIntelFB 0.9.7's
@@ -188,6 +196,11 @@ START-HERE.md             the prompt to paste into the first macOS agent session
 scripts/collect-baseline.sh   gate 0: record macOS state (read-only)
 scripts/efi-switch.sh     swap the ESP config between safe and xegfx (macOS or Linux), with backups
 scripts/run-xegfx-stages.sh   samwu07's stage runner, adapted: no XgFbMove, 7D51 check, reports on the ESP
+scripts/install-metal-probe.sh  installs the private Metal runtime and backs up and rebuilds the AuxKC
+scripts/test-metal-probe.sh      builds and runs the private Metal compute and draw probe after stage 7
+scripts/install-xegfx-framebuffer.sh  stages the signed Arc 130T framebuffer in the AuxKC after the private probe
+scripts/install-xegfx-desktop-component.sh  stages the framebuffer or the AGDC and desktop plugin step
+scripts/desktop-on.sh          arms and verifies display-pipe setup, then restarts WindowServer with a guard
 scripts/collect-after-crash.sh  panic reports + the previous boot's kernel log
 scripts/fetch-deps.sh     re-download everything in downloads/ (sha256-checked) if the ESP copy is missing
 scripts/make_xegfx_config.py  how config-xegfx.plist was made from config.plist (rerun if config.plist changes)

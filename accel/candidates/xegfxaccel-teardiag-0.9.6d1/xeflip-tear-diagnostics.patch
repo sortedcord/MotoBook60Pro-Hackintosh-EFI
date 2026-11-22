@@ -1,0 +1,107 @@
+diff -ru accel-orig/XeGfxAccel/accel/nvrm-accel.cpp accel-src/XeGfxAccel/accel/nvrm-accel.cpp
+--- accel-orig/XeGfxAccel/accel/nvrm-accel.cpp	2026-11-22 13:53:57
++++ accel-src/XeGfxAccel/accel/nvrm-accel.cpp	2026-11-22 13:55:16
+@@ -1904,6 +1904,7 @@
+     }
+     bool late = false;
+     if (pending) {
++        nvXfNoteMark(id);   // <teardiag>
+         if (slot == 32) slot = oldest;   // 32 surfaces in flight at once is not a compositor; the oldest mark goes
+         gSurfPend[slot].id = id; gSurfPend[slot].seq = ++gSurfPendSeq;
+     } else if (slot < 32 && gSurfPend[slot].id == id) {
+diff -ru accel-orig/XeGfxAccel/accel/xeflip_glue.inc accel-src/XeGfxAccel/accel/xeflip_glue.inc
+--- accel-orig/XeGfxAccel/accel/xeflip_glue.inc	2026-11-22 13:53:57
++++ accel-src/XeGfxAccel/accel/xeflip_glue.inc	2026-11-22 13:55:41
+@@ -79,8 +79,33 @@
+ SYSCTL_QUAD(_debug, OID_AUTO, nvaccel_xeflip_kept, CTLFLAG_RD | CTLFLAG_LOCKED, &gCntXfKept, "frames kept back: the surface's newest pixels were not in memory yet");
+ SYSCTL_QUAD(_debug, OID_AUTO, nvaccel_xeflip_copied, CTLFLAG_RD | CTLFLAG_LOCKED, &gCntXfCopied, "frames handed to the copy path (see last_why)");
+ 
++// <teardiag> which surface the panel scans now (0 = the boot framebuffer), and WindowServer drawing into it
++static volatile unsigned gXfFrontId;
++static SInt64 gCntXfFrontDraw, gCntXfPendWhileFlip, gCntXfFlushes;
++static int gXfClflush, gXfClflushUs, gXfClflushUsMax;
++static IOMemoryMap *gXfMap[XF_SLOTS];
++SYSCTL_QUAD(_debug, OID_AUTO, nvaccel_xeflip_front_draws, CTLFLAG_RD | CTLFLAG_LOCKED, &gCntXfFrontDraw, "pending marks (GPU work committed) for the surface the panel is scanning right now");
++SYSCTL_QUAD(_debug, OID_AUTO, nvaccel_xeflip_pend_marks, CTLFLAG_RD | CTLFLAG_LOCKED, &gCntXfPendWhileFlip, "pending marks while a slot is on the panel (front_draws out of these)");
++SYSCTL_INT(_debug, OID_AUTO, nvaccel_xeflip_front_id, CTLFLAG_RD | CTLFLAG_LOCKED, (int *)&gXfFrontId, 0, "surface ID on the panel (0 = boot framebuffer)");
++SYSCTL_INT(_debug, OID_AUTO, nvaccel_xeflip_clflush, CTLFLAG_RW | CTLFLAG_LOCKED, &gXfClflush, 0, "1 = clflush the whole surface from the CPU caches and LLC before each flip");
++SYSCTL_INT(_debug, OID_AUTO, nvaccel_xeflip_clflush_us, CTLFLAG_RD | CTLFLAG_LOCKED, &gXfClflushUs, 0, "last pre-flip clflush, us");
++SYSCTL_INT(_debug, OID_AUTO, nvaccel_xeflip_clflush_us_max, CTLFLAG_RD | CTLFLAG_LOCKED, &gXfClflushUsMax, 0, "longest pre-flip clflush, us");
++SYSCTL_QUAD(_debug, OID_AUTO, nvaccel_xeflip_flushes, CTLFLAG_RD | CTLFLAG_LOCKED, &gCntXfFlushes, "frames flushed before their flip");
++// called from nvSurfMark for every pending mark
++static void nvXfNoteMark(unsigned int id)
++{
++    const unsigned front = gXfFrontId;
++    if (!gXeFlip || !front) return;
++    OSAddAtomic64(1, &gCntXfPendWhileFlip);
++    if (id == front) OSAddAtomic64(1, &gCntXfFrontDraw);
++}
++// </teardiag>
+ static void nvXeFlipSysctls(void)
+ {
++    sysctl_register_oid(&sysctl__debug_nvaccel_xeflip_front_draws); sysctl_register_oid(&sysctl__debug_nvaccel_xeflip_pend_marks);
++    sysctl_register_oid(&sysctl__debug_nvaccel_xeflip_front_id);    sysctl_register_oid(&sysctl__debug_nvaccel_xeflip_clflush);
++    sysctl_register_oid(&sysctl__debug_nvaccel_xeflip_clflush_us);  sysctl_register_oid(&sysctl__debug_nvaccel_xeflip_clflush_us_max);
++    sysctl_register_oid(&sysctl__debug_nvaccel_xeflip_flushes);
+     sysctl_register_oid(&sysctl__debug_nvaccel_xeflip);          sysctl_register_oid(&sysctl__debug_nvaccel_xeflip_idle_ms);
+     sysctl_register_oid(&sysctl__debug_nvaccel_xeflip_last_why); sysctl_register_oid(&sysctl__debug_nvaccel_xeflip_map_us);
+     sysctl_register_oid(&sysctl__debug_nvaccel_xeflip_flip_us);  sysctl_register_oid(&sysctl__debug_nvaccel_xeflip_flips);
+@@ -103,6 +128,7 @@
+ // lock held: the slot's surface is let go (its range keeps our entries until the slot is mapped again)
+ static void xfRelease(int i)
+ {
++    if (gXfMap[i]) { gXfMap[i]->release(); gXfMap[i] = nullptr; }   // <teardiag>
+     if (gXfMd[i]) { gXfMd[i]->complete(); gXfMd[i]->release(); gXfMd[i] = nullptr; }
+     gXf.s[i].key = 0;
+ }
+@@ -137,7 +163,7 @@
+     const uint64_t idle = (uint64_t)(gXeFlipIdleMs < 100 ? 100 : gXeFlipIdleMs) * 1000000ull;
+     if (gXf.boot && gXf.front != gXf.boot && ns + 2000000ull >= idle) {
+         if (xfHomeWithCopy(NVAccel::gAccel)) {
+-            OSAddAtomic64(1, &gCntXfIdleHomes);
++            OSAddAtomic64(1, &gCntXfIdleHomes); gXfFrontId = 0;
+             for (int i = 0; i < XF_SLOTS; i++) xfRelease(i);
+         }
+     }
+@@ -198,10 +224,24 @@
+         if (nm < 8) ALOG("xeflip: surface 0x%x %llux%llu pitch %llu -> slot %d at GGTT 0x%08x (%u pages, %d us)",
+                          s->getSurfaceID(), W, H, P, i, xf_slot_addr(&gXf, i), pages, gXfMapUs);
+     }
++    if (gXfClflush) {   // <teardiag> the display engine reads DRAM, not the LLC
++        if (!gXfMap[i]) gXfMap[i] = md->map(kIOMapReadOnly);
++        if (gXfMap[i] && gXfMap[i]->getLength() >= bytes) {
++            const uint64_t tf = mach_absolute_time();
++            const uintptr_t base = (uintptr_t)gXfMap[i]->getVirtualAddress();
++            __asm__ volatile("mfence" ::: "memory");
++            for (uintptr_t ln = base & ~63ul, e = base + (uintptr_t)bytes; ln < e; ln += 64) __asm__ volatile("clflush (%0)" :: "r"(ln) : "memory");
++            __asm__ volatile("mfence" ::: "memory");
++            gXfClflushUs = (int)nvXeUs(tf);
++            if (gXfClflushUs > gXfClflushUsMax) gXfClflushUsMax = gXfClflushUs;
++            OSAddAtomic64(1, &gCntXfFlushes);
++        }
++    }
+     const uint64_t t1 = mach_absolute_time();
+     const int r = xf_flip(&gXf, i);
+     gXfFlipUs = (int)nvXeUs(t1);
+-    if (r == XF_OK) { gXfFb = fb; gXfLastFlip = mach_absolute_time(); }
++    if (r == XF_OK) { gXfFb = fb; gXfLastFlip = mach_absolute_time(); gXfFrontId = s->getSurfaceID(); }   // <teardiag>
++    else gXfFrontId = 0;
+     IOLockUnlock(l);
+     if (r != XF_OK) return xfNo(r);
+     const SInt64 n = OSAddAtomic64(1, &gCntXfFlips);
+@@ -216,13 +256,13 @@
+     IOLock *l = gXfLock;
+     if (!l) return;
+     IOLockLock(l);
+-    if (gXf.bar && gXf.boot && gXf.front != gXf.boot && xf_home(&gXf)) OSAddAtomic64(1, &gCntXfHomes);
++    if (gXf.bar && gXf.boot && gXf.front != gXf.boot && xf_home(&gXf)) { OSAddAtomic64(1, &gCntXfHomes); gXfFrontId = 0; }
+     IOLockUnlock(l);
+ }
+ // the accelerator stops: last frame into the boot framebuffer, boot framebuffer on the panel, surfaces let go
+ static void nvXeFlipShutdown(void)
+ {
+-    gXeFlip = 0;
++    gXeFlip = 0; gXfFrontId = 0;
+     IOLock *l = gXfLock;
+     if (!l) return;
+     IOLockLock(l);

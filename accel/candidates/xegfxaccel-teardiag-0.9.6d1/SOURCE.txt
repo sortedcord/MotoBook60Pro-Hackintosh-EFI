@@ -1,0 +1,7 @@
+WTLIntelGfx a3fd73ed68ae82af7d3c6a80ec4336507e944ed7 (v0.0.47) kexts/XeGfxAccel
++ xegfx-thinkbook14plus-mtl dc57f8ba: wtl-worktree.patch, xeflip.patch, gpufb.patch, wsmark.patch, backlight.patch,
+  xeflip_core.h, xeflip_glue.inc (= their 7-xeflip.sh, XeGfxAccel 0.9.6; stock/ is that build)
++ xeflip-tear-diagnostics.patch (this folder) -> 0.9.6d1
+NVIDIA open-gpu-kernel-modules 615.78.08 headers (tarball sha256 eac0ecd52facab28ad2963cf7e03ae8d2289d596ad590c703b5f72d65899e2bf)
+MacOSX15.5.sdk, Apple clang 17.0.0 (clang-1700.0.13.5), build_xegfxaccel.sh without -DNM_TAHOE. Ad hoc signed.
+String table of stock/ equals the installed 0.9.5 plus nvaccel_backlight.

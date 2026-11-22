@@ -44,6 +44,9 @@ def main():
     for root, dirs, files in os.walk(a.out):          # AppleDouble files break FAT32 ESPs
         for f in files:
             if f.startswith('._') or f == '.DS_Store': os.remove(os.path.join(root, f))
+    for root, dirs, files in os.walk(a.out, topdown=False):   # fsck.fat leftovers in the 240H zip: duplicate
+        for d in dirs:                                        # copies of VoodooI2CServices / VoodooPS2Keyboard
+            if d.upper().startswith('FSCK'): shutil.rmtree(os.path.join(root, d))
 
     # --- OpenCore 1.0.8 (DEBUG build: logs to the ESP during bring-up) -----------------------------------------
     shutil.copyfile(os.path.join(oc, 'OC', 'OpenCore.efi'), os.path.join(O, 'OpenCore.efi'))

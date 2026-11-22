@@ -1,0 +1,6 @@
+WTLIntelGfx a9dfe27820430fe5dc261a86b16a62f762d25740
+Vulkan-Headers 9a0f3099c8a9607a7c0f3127d8abfdc19a93e8c5
+Apply the patches from render-barrier-pacing-a9dfe278 and render-barrier-pacing-timing-a9dfe278 first.
+Then apply windowserver-completion-breakdown.patch. Build with build/build_plugin.sh and use the validated NVMTLDriver bundle's Info.plist and AIR runtime.
+UUID F81A79B3-7CE6-32C7-834C-1AC35359489F
+The diagnostic changes no synchronization policy. The source compiled and the signed bundle passed strict verification. Hardware tests are pending.
