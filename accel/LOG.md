@@ -497,3 +497,10 @@ Newest entry last. One entry per step: date, side (Linux/macOS), what ran, the r
   `config.plist` (it has the SMBIOS), `reports/` and `efi/` stay on the ESP only. The touchpad glitch-guard
   patches are in `accel/candidates/voodooi2chid-glitch-guard/`. The `touchpad/` folder mentioned above was in
   the macOS clone and was never pushed.
+
+## 2026-11-22 (user report, documented from the Linux side)
+
+- The user confirms that the GPU desktop in daily use now has all the transparency, blur and vibrancy effects,
+  video wallpapers, and good, smooth compositing. README and HANDOFF were updated with a "What works" table. What
+  still runs on the CPU: content of apps that aren't allow-listed, video decode (no VideoToolbox hardware decoder)
+  and one-time shader translation.

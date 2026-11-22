@@ -4,6 +4,12 @@ Context for the next agent session, which runs **on the macOS side** of this lap
 doing anything. It was written on 2026-11-22 from the Arch Linux side of the same machine, right after macOS was
 first installed.
 
+> **Current status (2026-11-22, evening): Gates 0–4 are done.** WindowServer composites on the Arc 130T with zero-copy
+> flip and starts automatically at every boot (`scripts/autostart.sh`, `amfi=0x80` in the live config). The user
+> confirms that transparency and blur effects, video wallpapers and smooth compositing all work. Open items:
+> tearing while windows move, apps outside the allow-list drawing on the CPU, software-only video decode, audio
+> (SN6140), the Safari video freeze, brightness and sleep. See `LOG.md` for the details and the latest step.
+
 ---
 
 ## 0. Ground rules from the user

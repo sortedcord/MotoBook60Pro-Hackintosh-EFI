@@ -10,8 +10,29 @@ Wi-Fi and Bluetooth, the Ethernet trick, input, battery and the EFI layout this 
 models share the chassis, the Realtek RTL8922A Wi-Fi/BT and most peripherals, but not the chipset. This repository
 is about that difference.
 
-> **Status: untested bring-up EFI.** The config passes `ocvalidate`, and the ACPI tables compile and were generated
-> from a real 225H. It has not booted macOS yet. Keep another boot entry, and expect to iterate with `-v`.
+> **Status: boots and runs macOS Sequoia 15.8.3 (24H241) with a GPU-accelerated desktop.** It booted first try from
+> a USB SSD. With the experimental XeGfx stack in [`accel/`](accel/), the Arc 130T now composites the desktop. You
+> get the full transparency and blur effects, video wallpapers and smooth window compositing. `EFI/` in this repo is
+> still the plain, unaccelerated base; see [Graphics acceleration](#graphics-acceleration) for the rest.
+
+## What works
+
+| | State |
+|---|---|
+| Boot, install, desktop | ✅ Sequoia 15.8.3 from a USB SSD, first try |
+| Graphics acceleration | ✅ WindowServer composites on the Intel GPU (XeGfx + Metal plugin, `accel/`) |
+| Transparency, blur, vibrancy | ✅ rendered correctly, after a render-barrier fix to the Metal plugin |
+| Video wallpapers | ✅ |
+| Window compositing | ✅ smooth, zero-copy flip, about 40–45 fps while dragging on the 60 Hz panel |
+| Wi-Fi | ✅ RTL8922AE |
+| Bluetooth | ✅ RTL8922A |
+| Touchpad | ✅ with the patched VoodooI2CHID (glitch guard; patches in `accel/candidates/voodooi2chid-glitch-guard/`) |
+| Keyboard | ✅ PS/2 |
+| App rendering | ⚠️ only allow-listed apps get the GPU, the rest draw on the CPU |
+| Video decode | ⚠️ software only (VideoToolbox reports no hardware decoder) |
+| Tearing | ⚠️ some while windows move |
+| Audio | ❌ Conexant SN6140 not detected yet |
+| Sleep, brightness | ❓ untested / not yet |
 
 ## Why the 240H EFI does not work on a 225H
 
@@ -59,11 +80,11 @@ is about that difference.
 
 | Device | ID | macOS driver |
 |---|---|---|
-| iGPU | `8086:7D51` rev 3 | UEFIGraphicsFB (framebuffer only) |
+| iGPU | `8086:7D51` rev 3 | XeGfx + XeGfxIntelFB/Accel/AGDC + NVMTL Metal plugin (`accel/`); UEFIGraphicsFB in the base EFI |
 | Wi-Fi | `10EC:8922` (RP08, `00:1C.7`) | AirPort_RTW89 + IO80211FamilyLegacy + IOSkywalkFamily |
 | Bluetooth | USB `0BDA:D922` | BlueToolFixup (Realtek) + BTNameFix |
-| Audio | Conexant SN6140 `14F1:1F87`, sub `17AA:3841` | AppleALC layout 15 (unverified) |
-| Touchpad | Goodix `GXTP5100` (`27C6:01E0`) on I2C0 | VoodooI2C + VoodooI2CHID, polling |
+| Audio | Conexant SN6140 `14F1:1F87`, sub `17AA:3841` | not working yet (AppleALC layout 15 isn't detected; a VoodooHDA trial is staged) |
+| Touchpad | Goodix `GXTP5100` (`27C6:01E0`) on I2C0 | VoodooI2C + VoodooI2CHID (glitch-guard build), polling |
 | Keyboard | PS/2 `PS2K` | VoodooPS2 |
 | NVMe | SK hynix PVC10 `1C5C:1F69` | native |
 | SD reader | O2 Micro `1217:8621` | none |
@@ -92,21 +113,28 @@ is about that difference.
 
 ## Known limits and what to expect
 
-- No graphics acceleration. The UI is CPU-drawn and slow, there are no transparency effects, and video is
-  software-decoded. Brightness keys will not work. Sleep is untested and probably wakes to a black screen.
+- With the base `EFI/` alone, there is no graphics acceleration (UEFIGraphicsFB). The accelerated desktop needs the
+  `accel/` stack and `amfi=0x80`. Even then, apps that aren't allow-listed draw on the CPU, and video is decoded in
+  software. Brightness keys don't work yet. Sleep is untested.
 - E-cores and LP E-cores are scheduled as ordinary cores. Without CPUFriend there is no tuned frequency table.
-- The touchpad uses polling (higher idle CPU use). See the ThinkBook repo for a VoodooI2CHID glitch-guard patch.
+- The touchpad uses polling. Stock VoodooI2CHID makes the cursor jump; the glitch-guard build fixes it (patches,
+  including one for this pad's 32-byte frame layout, in `accel/candidates/voodooi2chid-glitch-guard/`).
 - If it hangs early, boot with the DEBUG log (`Misc > Debug > Target = 67` is already set) and read the
   `opencore-*.txt` on the ESP.
 - AppleALC layout 15 for SN6140 comes from a community report on another laptop. If there's no sound, try other
   layouts or remove `layout-id`.
 
-## Graphics acceleration (work in progress)
+## Graphics acceleration
 
 Using the experimental [WTLIntelGfx/XeGfx](https://github.com/watchthelight-labs/WTLIntelGfx) driver (0.0.48), plus
 samwu07's ThinkBook Metal stack with fixes for this machine, the Arc 130T (`7D51`) now composites the macOS desktop
-on the GPU on Sequoia 15.8.3. Blur and transparency render correctly. Zero-copy flip works, at about 40–45 fps while
-dragging windows on the 60 Hz panel. An autostart LaunchDaemon brings the GPU desktop up at every boot. It needs
+on the GPU on Sequoia 15.8.3. The full transparency, blur and vibrancy effects render correctly, video wallpapers
+work, and compositing is smooth. Zero-copy flip works, at about 40–45 fps while dragging windows on the 60 Hz
+panel.
+
+What runs where: WindowServer's compositing and the hand-off of frames to the panel run on the GPU. Apps that
+aren't in `/Library/GPUBundles/nvmtl-allow.txt` still draw their own content on the CPU (add them one at a time
+with `accel/scripts/allow-app.sh`). Video decoding and the one-time shader translation are also on the CPU. An autostart LaunchDaemon brings the GPU desktop up at every boot. It needs
 `amfi=0x80`. Still open: tearing while windows move, no audio (SN6140 isn't detected), a display freeze seen once
 during Safari video playback, and most apps still drawing on the CPU unless they're allow-listed.
 
