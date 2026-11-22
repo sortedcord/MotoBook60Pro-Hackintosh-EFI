@@ -1,0 +1,8 @@
+# firmware dumps and generated tables (Lenovo code) - never commit
+acpi-out/
+*.dat
+EFI/OC/ACPI/DSDT-*.aml
+EFI/OC/ACPI/APIC-*.aml
+._*
+.DS_Store
+__pycache__/
