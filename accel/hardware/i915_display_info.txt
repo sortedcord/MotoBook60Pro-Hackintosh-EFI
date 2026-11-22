@@ -1,0 +1,113 @@
+CRTC info
+---------
+[CRTC:152:pipe A]:
+	uapi: enable=yes, active=yes, mode="1920x1200": 60 154260 1920 1968 2000 2080 1200 1208 1216 1236 0x48 0x9
+	hw: enable=yes, active=yes
+	adjusted_mode="1920x1200": 60 154260 1920 1968 2000 2080 1200 1208 1216 1236 0x48 0x9
+	pipe__mode="1920x1200": 60 154260 1920 1968 2000 2080 1200 1208 1216 1236 0x40 0x9
+	pipe src=1920x1200+0+0, dither=no, bpp=30
+	port_clock=540000, lane_count=2
+	num_scalers=2, scaler_users=0 scaler_id=-1 scaling_filter=0 sharpness_strength=0, scalers[0]: use=no, mode=0, scalers[1]: use=no, mode=0
+	background color (10bpc XRGB2101010): 00000000
+	[ENCODER:511:DDI A/PHY A]: connectors:
+		[CONNECTOR:512:eDP-1]
+	[PLANE:35:plane 1A]: type=PRI
+		uapi: [FB:556] XR24 little-endian (0x34325258),0x10000000000000f,1920x1200, visible=visible, src=1920.000000x1200.000000+0.000000+0.000000, dst=1920x1200+0+0, rotation=0 (0x00000001)
+		hw: [FB:556] XR24 little-endian (0x34325258),0x10000000000000f,1920x1200, visible=yes, src=1920.000000x1200.000000+0.000000+0.000000, dst=1920x1200+0+0, rotation=0 (0x00000001)
+	[PLANE:65:plane 2A]: type=OVL
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:95:plane 3A]: type=OVL
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:125:plane 4A]: type=OVL
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:135:plane 5A]: type=OVL
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:145:cursor A]: type=CUR
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	underrun reporting: cpu=yes pch=yes
+[CRTC:271:pipe B]:
+	uapi: enable=no, active=no, mode="": 0 0 0 0 0 0 0 0 0 0 0x0 0x0
+	hw: enable=no, active=no
+	adjusted_mode="": 0 0 0 0 0 0 0 0 0 0 0x0 0x0
+	pipe__mode="": 0 0 0 0 0 0 0 0 0 0 0x0 0x0
+	pipe src=0x0+0+0, dither=no, bpp=0
+	port_clock=0, lane_count=0
+	num_scalers=2, scaler_users=0 scaler_id=-1 scaling_filter=0 sharpness_strength=0, scalers[0]: use=no, mode=0, scalers[1]: use=no, mode=0
+	background color (10bpc XRGB2101010): 00000000
+	[PLANE:154:plane 1B]: type=PRI
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:184:plane 2B]: type=OVL
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:214:plane 3B]: type=OVL
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:244:plane 4B]: type=OVL
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:254:plane 5B]: type=OVL
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:264:cursor B]: type=CUR
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	underrun reporting: cpu=yes pch=yes
+[CRTC:390:pipe C]:
+	uapi: enable=no, active=no, mode="": 0 0 0 0 0 0 0 0 0 0 0x0 0x0
+	hw: enable=no, active=no
+	adjusted_mode="": 0 0 0 0 0 0 0 0 0 0 0x0 0x0
+	pipe__mode="": 0 0 0 0 0 0 0 0 0 0 0x0 0x0
+	pipe src=0x0+0+0, dither=no, bpp=0
+	port_clock=0, lane_count=0
+	num_scalers=2, scaler_users=0 scaler_id=-1 scaling_filter=0 sharpness_strength=0, scalers[0]: use=no, mode=0, scalers[1]: use=no, mode=0
+	background color (10bpc XRGB2101010): 00000000
+	[PLANE:273:plane 1C]: type=PRI
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:303:plane 2C]: type=OVL
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:333:plane 3C]: type=OVL
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:363:plane 4C]: type=OVL
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:373:plane 5C]: type=OVL
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:383:cursor C]: type=CUR
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	underrun reporting: cpu=yes pch=yes
+[CRTC:509:pipe D]:
+	uapi: enable=no, active=no, mode="": 0 0 0 0 0 0 0 0 0 0 0x0 0x0
+	hw: enable=no, active=no
+	adjusted_mode="": 0 0 0 0 0 0 0 0 0 0 0x0 0x0
+	pipe__mode="": 0 0 0 0 0 0 0 0 0 0 0x0 0x0
+	pipe src=0x0+0+0, dither=no, bpp=0
+	port_clock=0, lane_count=0
+	num_scalers=2, scaler_users=0 scaler_id=-1 scaling_filter=0 sharpness_strength=0, scalers[0]: use=no, mode=0, scalers[1]: use=no, mode=0
+	background color (10bpc XRGB2101010): 00000000
+	[PLANE:392:plane 1D]: type=PRI
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:422:plane 2D]: type=OVL
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:452:plane 3D]: type=OVL
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:482:plane 4D]: type=OVL
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:492:plane 5D]: type=OVL
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	[PLANE:502:cursor D]: type=CUR
+		uapi: [FB:0] n/a,0x0,0x0,, visible=hidden, src=0.000000x0.000000+0.000000+0.000000, dst=0x0+0+0, rotation=0 (0x00000001)
+	underrun reporting: cpu=yes pch=yes
+
+Connector info
+--------------
+[CONNECTOR:512:eDP-1]: status: connected
+	physical dimensions: 300x190mm
+	subpixel order: Unknown
+	CEA rev: 3
+	DPCD rev: 14
+	audio support: no
+	DP branch device present: no
+	HDCP version: No Connector Support
+	max bpc: 10
+	fixed modes:
+		"1920x1200": 60 154260 1920 1968 2000 2080 1200 1208 1216 1236 0x48 0x9
+		"1920x1200": 60 154260 1920 1968 2000 2080 1200 1208 1216 1236 0x40 0x9
+	modes:
+		"1920x1200": 60 154260 1920 1968 2000 2080 1200 1208 1216 1236 0x48 0x9
+[CONNECTOR:521:HDMI-A-1]: status: disconnected
+[CONNECTOR:530:DP-1]: status: disconnected
+[CONNECTOR:540:DP-2]: status: disconnected

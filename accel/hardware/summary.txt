@@ -1,0 +1,50 @@
+# lspci -nn (no -v; full -vv is on the ESP in hardware-private/)
+00:00.0 Host bridge [0600]: Intel Corporation Device [8086:7d20] (rev 05)
+00:02.0 VGA compatible controller [0300]: Intel Corporation Arrow Lake-P [Arc Pro 130T/140T] [8086:7d51] (rev 03)
+00:04.0 Signal processing controller [1180]: Intel Corporation Core Ultra 200H/200V Series Processors Dynamic Tuning Technology (DTT) [8086:7d03] (rev 05)
+00:06.0 PCI bridge [0604]: Intel Corporation Core Ultra 200 Series Processors PCIe Root Port #10 [8086:7eca] (rev 10)
+00:0a.0 Signal processing controller [1180]: Intel Corporation Core Ultra 200H/200V Series Processors Platform Monitoring Technology (PMT) [8086:7d0d] (rev 01)
+00:0b.0 Processing accelerators [1200]: Intel Corporation Core Ultra 200H/200V Series Processors NPU [8086:7d1d] (rev 05)
+00:0d.0 USB controller [0c03]: Intel Corporation Core Ultra 200 Series Processors USB xHCI [8086:7ec0] (rev 10)
+00:12.0 Serial controller [0700]: Intel Corporation Core Ultra 200H/200V Series Processors Integrated Sensor Hub [8086:7745]
+00:14.0 USB controller [0c03]: Intel Corporation Core Ultra 200H/200V Series Processors Standalone xHCI Controller [8086:777d]
+00:14.2 RAM memory [0500]: Intel Corporation Core Ultra 200H/200V Series Processors Shared SRAM [8086:777f]
+00:15.0 Serial bus controller [0c80]: Intel Corporation Core Ultra 200H/200V Series Processors I2C #0 [8086:7778]
+00:15.1 Serial bus controller [0c80]: Intel Corporation Core Ultra 200H/200V Series Processors I2C #1 [8086:7779]
+00:16.0 Communication controller [0780]: Intel Corporation Core Ultra 200H/200V Series Processors CSME HECI #1 [8086:7770]
+00:1c.0 PCI bridge [0604]: Intel Corporation Core Ultra 200H/200V Series Processors PCIe Root Port #6 [8086:773d]
+00:1c.7 PCI bridge [0604]: Intel Corporation Core Ultra 200H/200V Series Processors PCIe Root Port #8 [8086:773f]
+00:1f.0 ISA bridge [0601]: Intel Corporation Arrow Lake-H eSPI Controller [8086:7702]
+00:1f.3 Multimedia audio controller [0401]: Intel Corporation Core Ultra 200H/200V Series Processors HD Audio [8086:7728]
+00:1f.4 SMBus [0c05]: Intel Corporation Core Ultra 200H/200V Series Processors SMBus [8086:7722]
+00:1f.5 Serial bus controller [0c80]: Intel Corporation Core Ultra 200H/200V Series Processors SPI (flash) Controller [8086:7723]
+01:00.0 Non-Volatile memory controller [0108]: SK hynix PVC10 NVMe Solid State Drive (DRAM-less) [1c5c:1f69]
+02:00.0 SD Host controller [0805]: O2 Micro, Inc. OZ711 SD/MMC Card Reader Controller [1217:8621] (rev 01)
+03:00.0 Network controller [0280]: Realtek Semiconductor Co., Ltd. RTL8922AE 802.11be PCIe Wireless Network Adapter [10ec:8922] (rev 01)
+
+# lsusb
+3-10 0bda:d922 Bluetooth Radio
+3-6 32c2:0018 2.4G Wireless Receiver
+3-9 04f2:b829 Integrated Camera
+4-1 0bda:9201 TSD302
+usb1 1d6b:0002 xHCI Host Controller
+usb2 1d6b:0003 xHCI Host Controller
+usb3 1d6b:0002 xHCI Host Controller
+usb4 1d6b:0003 xHCI Host Controller
+
+# CPU
+model name	: Intel(R) Core(TM) Ultra 5 225H
+P-cores (cpu_core): 0-3  E/LP-E (cpu_atom): 4-11
+cpu0 apic 0;cpu1 apic 8;cpu2 apic 32;cpu3 apic 40;cpu4 apic 16;cpu5 apic 18;cpu6 apic 20;cpu7 apic 22;cpu8 apic 24;cpu9 apic 26;cpu10 apic 28;cpu11 apic 30;cpu12 apic 64;cpu13 apic 66;
+
+# backlight
+intel_backlight max=400 type=raw
+
+# kernel
+7.3.4-arch1-2
+
+# DMI
+MOTOROLA
+83NY
+motobook 60 14IAH10
+SFCN07WW

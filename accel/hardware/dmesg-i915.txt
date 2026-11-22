@@ -1,0 +1,24 @@
+[    1.116388] i915 0000:00:02.0: [drm] Found meteorlake (device ID 7d51) integrated display version 14.00 stepping D0
+[    1.132341] i915 0000:00:02.0: vgaarb: deactivate vga console
+[    1.132406] i915 0000:00:02.0: [drm] Using Transparent Hugepages
+[    1.156712] i915 0000:00:02.0: [drm] Finished loading DMC firmware i915/mtl_dmc.bin (v2.23)
+[    1.169374] i915 0000:00:02.0: vgaarb: VGA decodes changed: olddecodes=io+mem,decodes=io:owns=io+mem
+[    1.181162] i915 0000:00:02.0: [drm] GT0: GuC firmware i915/mtl_guc_70.bin version 70.53.0
+[    1.199382] i915 0000:00:02.0: [drm] GT0: GUC: submission enabled
+[    1.199386] i915 0000:00:02.0: [drm] GT0: GUC: SLPC enabled
+[    1.199601] i915 0000:00:02.0: [drm] GT0: GUC: RC enabled
+[    1.206965] i915 0000:00:02.0: [drm] GT1: GuC firmware i915/mtl_guc_70.bin version 70.53.0
+[    1.206968] i915 0000:00:02.0: [drm] GT1: HuC firmware i915/mtl_huc_gsc.bin version 8.5.4
+[    1.245389] i915 0000:00:02.0: [drm] GT1: HuC: authenticated for clear media
+[    1.245973] i915 0000:00:02.0: [drm] GT1: GUC: submission enabled
+[    1.245976] i915 0000:00:02.0: [drm] GT1: GUC: SLPC enabled
+[    1.246049] i915 0000:00:02.0: [drm] GT1: GUC: RC enabled
+[    1.254673] i915 0000:00:02.0: [drm] Protected Xe Path (PXP) protected content support initialized
+[    1.256832] i915 0000:00:02.0: [drm] Registered 4 planes with drm panic
+[    1.262864] [drm] Initialized i915 1.6.0 for 0000:00:02.0 on minor 1
+[    1.269230] i915 0000:00:02.0: [drm] Allocating fbdev: Stolen memory not preferred.
+[    1.272587] i915 0000:00:02.0: [drm] fb0: i915drmfb frame buffer device
+[    1.398244] i915 0000:00:02.0: [drm] GT1: Loaded GSC firmware i915/mtl_gsc_1.bin (cv1.0, r102.1.15.1926, svn 1)
+[    1.418685] i915 0000:00:02.0: [drm] GT1: HuC: authenticated for all workloads
+[    3.747253] mei_gsc_proxy 0000:00:16.0-0f73db04-97ab-4125-b893-e904ad0d5464: bound 0000:00:02.0 (ops i915_gsc_proxy_component_ops [i915])
+[    3.954413] sof-audio-pci-intel-mtl 0000:00:1f.3: bound 0000:00:02.0 (ops intel_audio_component_bind_ops [i915])

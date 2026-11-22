@@ -1,0 +1,13 @@
+00:02.0 VGA compatible controller [0300]: Intel Corporation Arrow Lake-P [Arc Pro 130T/140T] [8086:7d51] (rev 03) (prog-if 00 [VGA controller])
+	Subsystem: Lenovo Device [17aa:3809]
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0, Cache Line Size: 64 bytes
+	Interrupts: unknown pin routed to IRQ 155, MSI(X) routed to IRQ 155
+	Region 0: Memory at 4018000000 (64-bit, prefetchable) [size=16M]
+	Region 2: Memory at 4000000000 (64-bit, prefetchable) [size=256M]
+	Expansion ROM at 000c0000 [virtual] [disabled] [size=128K]
+	Capabilities: <access denied>
+	Kernel driver in use: i915
+	Kernel modules: i915, xe
+

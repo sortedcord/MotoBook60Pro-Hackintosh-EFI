@@ -101,6 +101,12 @@ is about that difference.
 - AppleALC layout 15 for SN6140 comes from a community report on another laptop. If there's no sound, try other
   layouts or remove `layout-id`.
 
+## Graphics acceleration (work in progress)
+
+`accel/` has the handoff for bringing up the experimental WTLIntelGfx/XeGfx driver on the Arc 130T:
+[`accel/HANDOFF.md`](accel/HANDOFF.md) (state, plan, pitfalls), [`accel/START-HERE.md`](accel/START-HERE.md), and
+[`accel/LOG.md`](accel/LOG.md). Nothing in it is enabled in `EFI/` by default.
+
 ## Rebuilding EFI/
 
 ```
