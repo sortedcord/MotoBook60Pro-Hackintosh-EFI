@@ -103,9 +103,17 @@ is about that difference.
 
 ## Graphics acceleration (work in progress)
 
-`accel/` has the handoff for bringing up the experimental WTLIntelGfx/XeGfx driver on the Arc 130T:
-[`accel/HANDOFF.md`](accel/HANDOFF.md) (state, plan, pitfalls), [`accel/START-HERE.md`](accel/START-HERE.md), and
-[`accel/LOG.md`](accel/LOG.md). Nothing in it is enabled in `EFI/` by default.
+Using the experimental [WTLIntelGfx/XeGfx](https://github.com/watchthelight-labs/WTLIntelGfx) driver (0.0.48), plus
+samwu07's ThinkBook Metal stack with fixes for this machine, the Arc 130T (`7D51`) now composites the macOS desktop
+on the GPU on Sequoia 15.8.3. Blur and transparency render correctly. Zero-copy flip works, at about 40–45 fps while
+dragging windows on the 60 Hz panel. An autostart LaunchDaemon brings the GPU desktop up at every boot. It needs
+`amfi=0x80`. Still open: tearing while windows move, no audio (SN6140 isn't detected), a display freeze seen once
+during Safari video playback, and most apps still drawing on the CPU unless they're allow-listed.
+
+Everything is in `accel/`: [`HANDOFF.md`](accel/HANDOFF.md) (state, plan, pitfalls), [`LOG.md`](accel/LOG.md)
+(the full bring-up log), `scripts/`, and `candidates/` (patches and build notes; the binaries aren't in git).
+Nothing in `accel/` is enabled in `EFI/` by default. The touchpad glitch-guard patch for the GXTP5100 is in
+`accel/candidates/voodooi2chid-glitch-guard/`.
 
 ## Rebuilding EFI/
 
